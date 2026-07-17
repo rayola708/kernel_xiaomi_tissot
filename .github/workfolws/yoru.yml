@@ -1,7 +1,12 @@
-name: Non Treble KSU
+name: Non Treble KSU Kernel
 
 on:
   workflow_dispatch:
+    inputs:
+      commit_sha:
+        description: 'Commit SHA di KernelSU-Next yang mau di-revert (kosongkan jika tidak perlu)'
+        required: false
+        default: ''
   watch:
     types: [started]
 
@@ -18,7 +23,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v7
 
       - name: Set Swap Space
         uses: pierotofy/set-swap-space@master
@@ -35,8 +40,7 @@ jobs:
             libxml2 libxml2-utils lzop pngcrush schedtool squashfs-tools xsltproc zlib1g-dev \
             libncurses5-dev bzip2 gcc-aarch64-linux-gnu gcc-arm-linux-gnueabihf \
             gcc-arm-linux-gnueabi dos2unix kmod
-          
-          # Install Telethon untuk Userbot
+
           python3 -m pip install telethon
 
       - name: Setup ZYC Clang
@@ -46,11 +50,19 @@ jobs:
             wget -q $(curl -k https://raw.githubusercontent.com/ZyCromerZ/Clang/main/Clang-12-link.txt) -O zyc-clang.tar.gz
             tar -xf zyc-clang.tar.gz
             rm -f zyc-clang.tar.gz
-  
+
       - name: Setup KernelSU (Legacy)
         run: |
-          # curl -LSs "https://raw.githubusercontent.com/rahmatsobrian/YoruNoKernelSU/dev/kernel/setup.sh" | bash -s legacy
+          # curl -LSs "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next/next/kernel/setup.sh" | bash -s legacy
           curl -LSs "https://raw.githubusercontent.com/backslashxx/KernelSU/master/kernel/setup.sh" | bash -
+
+      - name: Revert Commit on KernelSU-Next
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.commit_sha != ''
+        run: |
+          cd KernelSU-Next
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git revert --no-edit ${{ github.event.inputs.commit_sha }}
 
       - name: Start Build with log
         env:
