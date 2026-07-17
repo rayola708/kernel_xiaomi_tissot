@@ -1,4 +1,4 @@
-name: PhroLova Kernel Non Treble
+name: Non Treble KSU
 
 on:
   workflow_dispatch:
